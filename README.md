@@ -12,3 +12,19 @@ saankhya@araj:~/eva-llvm$ ./eva-llvm
 ; ModuleID = 'EvaLLVM'
 source_filename = "EvaLLVM"
 ```
+
+## Chapter 2 Basic numbers: Main function
+This chapter adds infrastructure to generate functions (main function in this case). Script to run and test the implementation  is added (`compile-run.sh`)
+
+The output of the script should give the following:
+```
+saankhya@araj:~/eva-llvm$ compile-run.sh
+; ModuleID = 'EvaLLVM'
+source_filename = "EvaLLVM"
+
+define i32 @main() {
+entry:
+  ret i32 42
+}
+42
+```
