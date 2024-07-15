@@ -15,6 +15,7 @@ class EvaLLVM {
   public:
     EvaLLVM() {
       moduleInit();
+      setupExternFunctions();
     }
 
     /**
@@ -59,6 +60,21 @@ class EvaLLVM {
 
       // strings:
       return builder->CreateGlobalStringPtr("Hello, world!\n");
+    }
+
+    /** 
+     * Define external functions (from libc++)
+     */
+    void setupExternFunctions() {
+      // i8* to substitute for char*, void*, etc
+      auto bytePtrTy = builder->getInt8Ty()->getPointerTo();
+
+      // int printf(const char* format, ...);
+      module->getOrInsertFunction("printf", 
+          llvm::FunctionType::get(
+            /* return type */ builder->getInt32Ty(),
+            /* format arg */ bytePtrTy,
+            /* vararg */ true));
     }
 
     /** 
