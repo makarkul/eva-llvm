@@ -55,7 +55,10 @@ class EvaLLVM {
      * Main compile loop.
      */
     llvm::Value* gen(/* exp */) {
-      return builder->getInt32(42);
+      // return builder->getInt32(42);
+
+      // strings:
+      return builder->CreateGlobalStringPtr("Hello, world!\n");
     }
 
     /** 
