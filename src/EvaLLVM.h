@@ -15,6 +15,7 @@ class EvaLLVM {
   public:
     EvaLLVM() {
       moduleInit();
+      setupExternFunctions();
     }
 
     /**
@@ -55,7 +56,33 @@ class EvaLLVM {
      * Main compile loop.
      */
     llvm::Value* gen(/* exp */) {
-      return builder->getInt32(42);
+      // return builder->getInt32(42);
+
+      // strings:
+      auto str = builder->CreateGlobalStringPtr("Hello, world!\n");
+
+      // call to printf
+      auto printfFn = module->getFunction("printf");
+
+      // args:
+      std::vector<llvm::Value*> args{str};
+
+      return builder->CreateCall(printfFn, args);
+    }
+
+    /** 
+     * Define external functions (from libc++)
+     */
+    void setupExternFunctions() {
+      // i8* to substitute for char*, void*, etc
+      auto bytePtrTy = builder->getInt8Ty()->getPointerTo();
+
+      // int printf(const char* format, ...);
+      module->getOrInsertFunction("printf", 
+          llvm::FunctionType::get(
+            /* return type */ builder->getInt32Ty(),
+            /* format arg */ bytePtrTy,
+            /* vararg */ true));
     }
 
     /** 
