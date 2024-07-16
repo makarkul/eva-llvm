@@ -11,9 +11,13 @@
 #include "llvm/IR/Module.h"
 #include "llvm/IR/Verifier.h"
 
+#include "parser/EvaParser.h"
+
+using syntax::EvaParser;
+
 class EvaLLVM {
   public:
-    EvaLLVM() {
+    EvaLLVM() : parser(std::make_unique<EvaParser>()) {
       moduleInit();
       setupExternFunctions();
     }
@@ -23,10 +27,10 @@ class EvaLLVM {
      */
     void exec(const std::string& program) {
       // 1. Parse the program
-      // auto ast = parser->parser(program);
+      auto ast = parser->parse(program);
       
       // 2. Compile to LLM IR:
-      compile();
+      compile(ast);
 
       // Print generated code.
       module->print(llvm::outs(), nullptr);
@@ -36,14 +40,14 @@ class EvaLLVM {
     }
 
   private:
-    void compile(/* TODO: ast */) {
+    void compile(const Exp& ast) {
       // 1. Create main function:
      fn = createFunction(
          "main", llvm::FunctionType::get(/* return type */ builder->getInt32Ty(),
                                          /* vararg */ false));
 
       // 2. Compile main body:
-      auto result = gen(/* ast */);
+      auto result = gen(ast);
 
       // Cast to i32 to return from main:
       auto i32Result =
@@ -55,19 +59,57 @@ class EvaLLVM {
     /** 
      * Main compile loop.
      */
-    llvm::Value* gen(/* exp */) {
-      // return builder->getInt32(42);
+    llvm::Value* gen(const Exp& exp) {
 
-      // strings:
-      auto str = builder->CreateGlobalStringPtr("Hello, world!\n");
+      switch (exp.type) {
+        /**
+         * ---------------------------------------
+         * Numbers.
+         */
+        case ExpType::NUMBER:
+          return builder->getInt32(exp.number);
 
-      // call to printf
-      auto printfFn = module->getFunction("printf");
+        /**
+         * ---------------------------------------
+         * Strings.
+         */
+        case ExpType::STRING:
+          return builder->CreateGlobalStringPtr(exp.string);
 
-      // args:
-      std::vector<llvm::Value*> args{str};
+        /**
+         * ---------------------------------------
+         * Lists.
+         */
+        case ExpType::LIST:
+          auto tag = exp.list[0];
 
-      return builder->CreateCall(printfFn, args);
+          /**
+           * -------------------------------------
+           * Special cases.
+           */
+          if (tag.type == ExpType::SYMBOL) {
+            auto op = tag.string;
+
+            // -----------------------------------
+            // printf extern function:
+            //
+            // (printf "Value: %d" 42)
+            //
+
+            if (op == "printf") {
+              auto printfFn = module->getFunction("printf");
+              
+              std::vector<llvm::Value*> args{};
+              
+              for (auto i = 1; i < exp.list.size(); i++) {
+                args.push_back(gen(exp.list[i]));
+              }
+              return builder->CreateCall(printfFn, args);
+          } 
+        }
+      }
+      // Unreachable
+      return builder->getInt32(0);
     }
 
     /** 
@@ -154,6 +196,10 @@ class EvaLLVM {
       module->print(outLL, nullptr);
     }
 
+    /**
+     * Parser.
+     */
+    std::unique_ptr<EvaParser> parser;
     /**
      * Currently compiling function.
      */

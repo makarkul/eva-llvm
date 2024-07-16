@@ -1,5 +1,5 @@
 # Compile main:
-clang++ -o eva-llvm `llvm-config --cxxflags --ldflags --system-libs --libs core` src/eva-llvm.cpp
+clang++ -o eva-llvm `llvm-config --cxxflags --ldflags --system-libs --libs core` -fexceptions src/eva-llvm.cpp
 
 # Run main:
 ./eva-llvm
