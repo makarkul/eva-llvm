@@ -10,7 +10,8 @@ int main(int argc, char const *argv[]) {
    * Program to execute
    */
   std::string program = R"(
-    (printf "Value : %d" 42)
+    (var VERSION 42)
+    // (printf "Version: %d\n\n" VERSION)
   )";
 
   /**
