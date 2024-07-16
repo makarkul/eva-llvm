@@ -28,3 +28,4 @@ entry:
 }
 42
 ```
+## Chapter 3 Strings: Extern calls

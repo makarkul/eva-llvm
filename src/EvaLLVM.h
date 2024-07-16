@@ -59,7 +59,15 @@ class EvaLLVM {
       // return builder->getInt32(42);
 
       // strings:
-      return builder->CreateGlobalStringPtr("Hello, world!\n");
+      auto str = builder->CreateGlobalStringPtr("Hello, world!\n");
+
+      // call to printf
+      auto printfFn = module->getFunction("printf");
+
+      // args:
+      std::vector<llvm::Value*> args{str};
+
+      return builder->CreateCall(printfFn, args);
     }
 
     /** 
