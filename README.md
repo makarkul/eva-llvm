@@ -49,4 +49,12 @@ Hello, world!
 14
 ```
 
-Notice the `getelementptr` call, this will be discussed in the next chapter
+Notice the `getelementptr` call, this will be discussed in the next chapters
+
+## Chapter 4 Parsing : S-expressions
+In this chapter we add basic parser for the grammar of Eva and parse the following program using the same
+```
+(
+    (printf "Value : %d" 42)
+)
+```
