@@ -4,6 +4,7 @@
 #ifndef EvaLLVM_h
 #define EvaLLVM_h
 
+#include <regex>
 #include <string>
 
 #include "llvm/IR/IRBuilder.h"
@@ -93,8 +94,13 @@ class EvaLLVM {
          * ---------------------------------------
          * Strings.
          */
-        case ExpType::STRING:
-          return builder->CreateGlobalStringPtr(exp.string);
+        case ExpType::STRING: {
+          // Unescape special chars. TODO: support all chars or handle in parser.
+          auto re = std::regex("\\\\n");
+          auto str = std::regex_replace(exp.string, re, "\n");
+
+          return builder->CreateGlobalStringPtr(str);
+        }
 
         /**
          * ---------------------------------------
