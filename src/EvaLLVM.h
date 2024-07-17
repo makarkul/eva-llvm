@@ -42,9 +42,11 @@ class EvaLLVM {
   private:
     void compile(const Exp& ast) {
       // 1. Create main function:
-     fn = createFunction(
+      fn = createFunction(
          "main", llvm::FunctionType::get(/* return type */ builder->getInt32Ty(),
                                          /* vararg */ false));
+
+      createGlobalVar("VERSION", builder->getInt32(42));
 
       // 2. Compile main body:
       auto result = gen(ast);
@@ -85,6 +87,7 @@ class EvaLLVM {
             // 1. Local vars: (TODO)
 
             // 2. Global vars:
+            return module->getNamedGlobal(exp.string)->getInitializer();
           }
         /**
          * ---------------------------------------
