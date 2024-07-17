@@ -6,6 +6,3 @@ clang++ -o eva-llvm `llvm-config --cxxflags --ldflags --system-libs --libs core`
 
 # Execute generated IR:
 lli ./out.ll
-
-# Print result
-echo $?
