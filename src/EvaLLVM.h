@@ -42,9 +42,11 @@ class EvaLLVM {
   private:
     void compile(const Exp& ast) {
       // 1. Create main function:
-     fn = createFunction(
+      fn = createFunction(
          "main", llvm::FunctionType::get(/* return type */ builder->getInt32Ty(),
                                          /* vararg */ false));
+
+      createGlobalVar("VERSION", builder->getInt32(42));
 
       // 2. Compile main body:
       auto result = gen(ast);
@@ -71,6 +73,24 @@ class EvaLLVM {
 
         /**
          * ---------------------------------------
+         * Symbols.
+         */
+        case ExpType::SYMBOL:
+          /**
+           * Boolean
+           */
+          if (exp.string == "true" || exp.string == "false") {
+            return builder->getInt1(exp.string == "true" ? true : false);
+          } else {
+            // Variables:
+            
+            // 1. Local vars: (TODO)
+
+            // 2. Global vars:
+            return module->getNamedGlobal(exp.string)->getInitializer();
+          }
+        /**
+         * ---------------------------------------
          * Strings.
          */
         case ExpType::STRING:
@@ -91,12 +111,25 @@ class EvaLLVM {
             auto op = tag.string;
 
             // -----------------------------------
+            // Variable declaration: (var x (+ y 10))
+
+            if (op == "var") {
+              // TODO: handle generic values
+
+              auto varName = exp.list[1].string;
+
+              // Initializer:
+              auto init = gen(exp.list[2]);
+              return createGlobalVar(varName, (llvm::Constant*)init);
+            } 
+
+            // -----------------------------------
             // printf extern function:
             //
             // (printf "Value: %d" 42)
             //
 
-            if (op == "printf") {
+            else if (op == "printf") {
               auto printfFn = module->getFunction("printf");
               
               std::vector<llvm::Value*> args{};
@@ -110,6 +143,20 @@ class EvaLLVM {
       }
       // Unreachable
       return builder->getInt32(0);
+    }
+    
+    /**
+     * Creates a global variable.
+     */
+    llvm::GlobalVariable* createGlobalVar(const std::string& name,
+        llvm::Constant* init) {
+      module->getOrInsertGlobal(name, init->getType());
+      auto variable = module->getNamedGlobal(name);
+      variable->setAlignment(llvm::MaybeAlign(4));
+      variable->setConstant(false);
+      variable->setInitializer(init);
+
+      return variable;
     }
 
     /** 
