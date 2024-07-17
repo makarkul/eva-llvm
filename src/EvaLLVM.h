@@ -24,28 +24,35 @@ class EvaLLVM {
     }
 
     /**
-     * Executes a program
+     * Executes a program.
      */
     void exec(const std::string& program) {
       // 1. Parse the program
-      auto ast = parser->parse(program);
+      auto ast = parser->parse("(begin " + program + ")");
       
-      // 2. Compile to LLM IR:
+      // 2. Compile to LLVM IR:
       compile(ast);
 
       // Print generated code.
       module->print(llvm::outs(), nullptr);
+
+    std::cout << "\n";
       
-      // 3. save module IR to file:
+      // 3. Save module IR to file:
       saveModuleToFile("out.ll");
     }
 
   private:
+    /**
+     * Compiles an expression.
+     */
     void compile(const Exp& ast) {
       // 1. Create main function:
       fn = createFunction(
-         "main", llvm::FunctionType::get(/* return type */ builder->getInt32Ty(),
-                                         /* vararg */ false));
+         "main", 
+         llvm::FunctionType::get(/* return type */ builder->getInt32Ty(),
+                                 /* vararg */ false)
+                                );
 
       // createGlobalVar("VERSION", builder->getInt32(42));
 
@@ -142,6 +149,20 @@ class EvaLLVM {
               }
               return builder->CreateCall(printfFn, args);
           } 
+
+          // -----------------------------------
+          // Blocks: (begin <expression>)
+
+          else if (op == "begin") {
+            // Compile each expression within the block
+            // Result is the last evaluated expression
+            llvm::Value* blockRes;
+            for (auto i = 1; i < exp.list.size(); i++) {
+              //Generate expression code
+              blockRes = gen(exp.list[i]);
+            }
+            return blockRes;
+          }
         }
       }
       // Unreachable
