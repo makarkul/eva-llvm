@@ -47,16 +47,12 @@ class EvaLLVM {
          "main", llvm::FunctionType::get(/* return type */ builder->getInt32Ty(),
                                          /* vararg */ false));
 
-      createGlobalVar("VERSION", builder->getInt32(42));
+      // createGlobalVar("VERSION", builder->getInt32(42));
 
       // 2. Compile main body:
       auto result = gen(ast);
 
-      // Cast to i32 to return from main:
-      auto i32Result =
-        builder->CreateIntCast(result, builder->getInt32Ty(), true);
-
-      builder->CreateRet(i32Result);
+      builder->CreateRet(builder->getInt32(0));
     }
 
     /** 
@@ -126,7 +122,8 @@ class EvaLLVM {
 
               // Initializer:
               auto init = gen(exp.list[2]);
-              return createGlobalVar(varName, (llvm::Constant*)init);
+              return createGlobalVar(varName, (llvm::Constant*)init)
+                        ->getInitializer();
             } 
 
             // -----------------------------------
