@@ -58,3 +58,20 @@ In this chapter we add basic parser for the grammar of Eva and parse the followi
     (printf "Value : %d" 42)
 )
 ```
+## Chapter 5 Symbols: Global variables
+This demonstrates how to add global variables in the generated code from the S-expressions. At the end, one should get the following IR generated
+```
+; ModuleID = 'EvaLLVM'
+source_filename = "EvaLLVM"
+
+@VERSION = global i32 42, align 4
+@0 = private unnamed_addr constant [16 x i8] c"Version: %d\\n\\n\00", align 1
+
+declare i32 @printf(i8*, ...)
+
+define i32 @main() {
+entry:
+  %0 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([16 x i8], [16 x i8]* @0, i32 0, i32 0), i32* @VERSION)
+  ret i32 %0
+}
+```
