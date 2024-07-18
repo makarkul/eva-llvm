@@ -10,12 +10,16 @@ int main(int argc, char const *argv[]) {
    * Program to execute
    */
   std::string program = R"(
-    // (var VERSION 42)
-    // (begin
-    //   (var VERSION "Hello")
-    //   (printf "Version: %s\n\n" VERSION)
-    // )
-    (printf "Version: %d\n\n" VERSION)
+    (var x 42)
+    (begin
+      (var (x string) "Hello")
+      (printf "X: %s\n\n" x)
+    )
+    (printf "X: %d\n\n" x)
+
+    (set x 100)
+
+    (printf  "X: %d\n\n" x)
   )";
 
   /**
