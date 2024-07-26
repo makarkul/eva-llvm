@@ -10,16 +10,14 @@ int main(int argc, char const *argv[]) {
    * Program to execute
    */
   std::string program = R"(
-    (var x 42)
-    (begin
-      (var (x string) "Hello")
-      (printf "X: %s\n\n" x)
-    )
-    (printf "X: %d\n\n" x)
+    (var z 32)
+    (var x (+ z 10))
 
-    (set x 100)
-
-    (printf  "X: %d\n\n" x)
+    // (if (== x 42)
+    //   (set x 100)
+    //   (set x 200)
+    // )
+    (printf "Is X == 42? : %d\n" (> x 42))
   )";
 
   /**

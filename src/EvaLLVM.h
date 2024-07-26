@@ -22,6 +22,14 @@ using syntax::EvaParser;
  */
 using Env = std::shared_ptr<Environment>;
 
+// Generic binary operator:
+#define GEN_BINARY_OP(Op, varName)          \
+  do {                                      \
+    auto op1 = gen(exp.list[1], env);       \
+    auto op2 = gen(exp.list[2], env);       \
+    return builder->Op(op1, op2, varName);  \
+  } while (false)
+
 class EvaLLVM {
   public:
     EvaLLVM() : parser(std::make_unique<EvaParser>()) {
@@ -134,6 +142,58 @@ class EvaLLVM {
            */
           if (tag.type == ExpType::SYMBOL) {
             auto op = tag.string;
+
+            // -----------------------------------
+            // Binary math operations:
+
+            if (op == "+") {
+              GEN_BINARY_OP(CreateAdd, "tmpadd");
+            }
+
+            else if (op == "-") {
+              GEN_BINARY_OP(CreateSub, "tmpsub");
+            }
+
+            else if (op == "*") {
+              GEN_BINARY_OP(CreateMul, "tmpmul");
+            }
+
+            else if (op == "/") {
+              GEN_BINARY_OP(CreateSDiv, "tmpdiv");
+            }
+
+            // -----------------------------------
+            // Compare operations: (> 5 10)
+            
+            // UGT - unsigned, greater than
+            else if(op == ">") {
+              GEN_BINARY_OP(CreateICmpUGT, "tmpcmp");
+            }
+
+            // ULT - unsigned, less  than
+            else if(op == "<") {
+              GEN_BINARY_OP(CreateICmpULT, "tmpcmp");
+            }
+
+            // EQ = equal
+            else if(op == "==") {
+              GEN_BINARY_OP(CreateICmpEQ, "tmpcmp");
+            }
+
+            // NE = not equal
+            else if(op == "!=") {
+              GEN_BINARY_OP(CreateICmpNE, "tmpcmp");
+            }
+
+            // UGE = greater or equal
+            else if(op == ">=") {
+              GEN_BINARY_OP(CreateICmpUGE, "tmpcmp");
+            }
+
+            // ULE = less or equal
+            else if(op == "<=") {
+              GEN_BINARY_OP(CreateICmpULE, "tmpcmp");
+            }
 
             // -----------------------------------
             // Variable declaration: (var x (+ y 10))
